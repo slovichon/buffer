@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #include "buffer.h"
 #include <assert.h>
 #include <string.h>
@@ -155,10 +157,10 @@ bool Buffer_is_set(Buffer *p)
 void Buffer_cat_range(Buffer *p, char *start, char *end)
 {
 	int len = p->len + end-start;
-bark("[len: %d] [mem: %d] [data: %s]", p->len, p->mem, p->data);
+//bark("[len: %d] [mem: %d] [data: %s]", p->len, p->mem, p->data);
 	Buffer_ensure(p, len);
 	strncat(p->data, start, end-start);
 	p->data[len-1] = '\0';
 	p->len = len;
-bark("[len: %d] [mem: %d] [data: %s]", p->len, p->mem, p->data);
+//bark("[len: %d] [mem: %d] [data: %s]", p->len, p->mem, p->data);
 }

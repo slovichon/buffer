@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include "buffer.h"
