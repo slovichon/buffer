@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+static void Buffer_ensure(Buffer *p, size_t len);
+
 void Buffer_long_free(Buffer **p, bool saveptr)
 {
 	if (p && *p) {
@@ -135,7 +137,7 @@ char *Buffer_get(Buffer *p)
 	return p->data;
 }
 
-void Buffer_ensure(Buffer *p, size_t len)
+static void Buffer_ensure(Buffer *p, size_t len)
 {
 	int newlen;
 	if (p->mem < len) {

@@ -55,7 +55,7 @@ void Buffer_cat(Buffer *, char *);
 void Buffer_set(Buffer *, char *);
 char *Buffer_get(Buffer *);
 void Buffer_append(Buffer *, Buffer *);
-void Buffer_ensure(Buffer *, size_t);
+// void Buffer_ensure(Buffer *, size_t);
 int Buffer_length(Buffer *);
 void Buffer_replace(Buffer *, int, int, Buffer *);
 void Buffer_copy(Buffer *, Buffer *);
