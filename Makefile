@@ -8,7 +8,7 @@ LIBS = -lm -lc
 TARGET = buftest
 
 #CFLAGS = -Wall -pedantic -O2 -ffast-math -pipe -march=i686 -fexpensive-optimizations
-CFLAGS = -Wall -pedantic -ansi
+CFLAGS = -Wall -pedantic
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
