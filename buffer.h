@@ -54,6 +54,8 @@ void Buffer_copy(Buffer *, Buffer *);
 bool Buffer_is_set(Buffer *);
 void Buffer_cat_range(Buffer *, char *, char *);
 
-void bark(char *msg, ...);
+#ifndef __BARK
+void bark(char *, ...);
+#endif
 
 #endif /* _BUFFER_H */

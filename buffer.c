@@ -164,3 +164,18 @@ void Buffer_cat_range(Buffer *p, char *start, char *end)
 	p->len = len;
 //bark("[len: %d] [mem: %d] [data: %s]", p->len, p->mem, p->data);
 }
+
+#ifndef __BARK
+#include <stdarg.h>
+void bark(char *msg, ...)
+{
+	va_list ap;
+	fprintf(stderr, "[ERR] ");
+	va_start(ap, msg);
+	(void)vfprintf(stderr, msg, ap);
+	va_end(ap);
+	fprintf(stderr, "\n");
+	(void)fflush(stderr);
+}
+#endif
+
