@@ -151,7 +151,7 @@ void Buffer_ensure(Buffer *p, size_t len)
 
 bool Buffer_is_set(Buffer *p)
 {
-	return p != NULL && p->data != NULL;
+	return (p != NULL) && (p->data != NULL);
 }
 
 void Buffer_cat_range(Buffer *p, char *start, char *end)
