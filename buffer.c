@@ -11,11 +11,11 @@ void Buffer_long_free(Buffer **p, bool saveptr)
 	if (p && *p) {
 		if ((*p)->data && !saveptr) {
 			free((*p)->data);
-			(*p)->data = NULL;
+//			(*p)->data = NULL;
 		}
 //bark("data freed");
-		(*p)->mem = 0;
-		(*p)->len = -1;
+//		(*p)->mem = 0;
+//		(*p)->len = -1;
 //bark("freeing pointer");
 		free(*p);
 		*p = NULL;
@@ -60,6 +60,9 @@ void Buffer_replace(Buffer *dst, int start, int len, Buffer *src)
 void Buffer_addch(Buffer *p, char ch)
 {
 	int len = p->len;
+	/* our data is already zero-bounded */
+	if (ch == '\0')
+		return;
 	if (len <= 0) {
 		/* buffer hasn't been initialized yet */
 //bark("uninitialized!");
@@ -75,8 +78,10 @@ void Buffer_addch(Buffer *p, char ch)
 
 void Buffer_append(Buffer *dst, Buffer *src)
 {
-	if (dst->len >= 0) {
+	if (dst->len > 0) {
 		int len = Buffer_length(dst) + Buffer_length(src) - 1;
+//bark("requires %d [%s%s (%d:%d)]", len, Buffer_get(dst), Buffer_get(src),
+//			Buffer_length(dst), Buffer_length(src));
 		Buffer_ensure(dst, len);
 		strncat(dst->data, src->data, Buffer_length(src)-1);
 		dst->data[len-1] = '\0';
@@ -101,7 +106,7 @@ void Buffer_set(Buffer *p, char *s)
 	Buffer_ensure(p, len);
 	strncpy(p->data, s, len-1);
 	p->data[len-1] = '\0';
-bark("buffer set to %s", p->data);
+//bark("buffer set to %s", p->data);
 	p->len = len;
 }
 
@@ -117,7 +122,7 @@ void Buffer_cat(Buffer *p, char *s)
 		p->len = len;
 	} else {
 		/* buffer hasn't been initialized yet */
-bark("uninitialized buffer catted!");
+//bark("uninitialized buffer catted!");
 		Buffer_set(p, s);
 	}
 }
@@ -135,7 +140,7 @@ void Buffer_ensure(Buffer *p, size_t len)
 	int newlen;
 	if (p->mem < len) {
 //bark("buffer (%s) not big enough, resizing", p->data);
-		newlen = 8*ceil((1+(len * 3)/2)/8); /* 1/log(len) */
+		newlen = 8*ceil((double)(1+(len * 3)/2)/8); /* 1/log(len) */
 //bark("increasing capacity from %d <len %d> to %d (%d)", p->mem, p->len, newlen, len);
 		assert((p->data = (char *)realloc(p->data, newlen)) != NULL);
 		p->mem = newlen;
@@ -163,6 +168,87 @@ void Buffer_cat_range(Buffer *p, char *start, char *end)
 	p->data[len-1] = '\0';
 	p->len = len;
 //bark("[len: %d] [mem: %d] [data: %s]", p->len, p->mem, p->data);
+}
+
+VBuffer *VBuffer_init(void)
+{
+	VBuffer *v;
+	assert((v = (VBuffer *)malloc(sizeof(VBuffer))) != NULL);
+	v->buf = NULL;
+	v->next = NULL;
+	return v;
+}
+
+/*
+void VBuffer_clear(VBuffer **v)
+{
+	VBuffer **i;
+	if (*v != NULL) {
+		for (i = v; (*i)->next != NULL; i = &(*i)->next) {
+			Buffer_free((*i)->buf);
+			free(*i);
+			*i = NULL;
+		}
+	}
+}
+*/
+
+void VBuffer_long_free(VBuffer **v, bool save)
+{
+	if ((v != NULL) && (*v != NULL)) {
+		if (!save)
+			Buffer_free(&(*v)->buf);
+		free(*v);
+		*v = NULL;
+	}
+}
+
+void VBuffer_add(VBuffer *v, Buffer *p)
+{
+	VBuffer *new, *i;
+	if (v->buf == NULL) {
+		/* it's empty, use it */
+		v->buf = p;
+	} else {
+		new = VBuffer_init();
+		new->buf = p;
+		/* find last vbuf */
+		for (i = v; i->next != NULL; i = i->next);
+		i->next = new;
+bark("[vbuf] added %s", Buffer_get(p));
+	}
+}
+
+Buffer *VBuffer_remove(VBuffer **v)
+{
+	VBuffer *newlast = NULL, *last;
+	Buffer *p;
+	for (last = *v; last && (last->next != NULL); last = last->next)
+		newlast = last;
+//bark("[vbuf] second-last: [%s] last: [%s]",
+//	newlast == NULL ? "(NULL)" : Buffer_get(newlast->buf),
+//	last    == NULL ? "(NULL)" : Buffer_get(last->buf));
+	/* tried to remove an empty vbuf */
+	if ((newlast == NULL) && (last == NULL))
+		return NULL;
+	p = last->buf;
+	if (newlast == NULL) {
+		/* last one, clear original vbuf */
+		VBuffer_long_free(v, TRUE);
+	} else {
+		newlast->next = NULL;
+		VBuffer_long_free(&last, TRUE);
+	}
+//bark("vbuf freed");
+	return p;
+}
+
+size_t VBuffer_length(VBuffer *v)
+{
+	VBuffer *i;
+	size_t n = 0;
+	for (i = v; i; n++, i = i->next);
+	return n;
 }
 
 #ifndef __BARK

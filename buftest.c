@@ -4,16 +4,7 @@
 #include <stdarg.h>
 #include "buffer.h"
 
-void bark(char *msg, ...)
-{
-	va_list ap;
-	fprintf(stderr, "[ERR] ");
-	va_start(ap, msg);
-	(void)vfprintf(stderr, msg, ap);
-	va_end(ap);
-	fprintf(stderr, "\n");
-	(void)fflush(stderr);
-}
+void vbuf_test(void);
 
 int main(int argc, char *argv[])
 {
@@ -62,5 +53,39 @@ bark("buffer contents gathered");
 	Buffer_free(&p);
 	Buffer_free(&q);
 
+	vbuf_test();
+
 	return 0;
+}
+
+void vbuf_test(void)
+{
+	VBuffer *v;
+	Buffer *p;
+
+	v = VBuffer_init();
+
+	p = Buffer_init(5);
+	Buffer_set(p, "test");
+	VBuffer_add(v, p);
+
+	p = Buffer_init(5);
+	Buffer_set(p, "test2");
+	VBuffer_add(v, p);
+
+	p = Buffer_init(12);
+	Buffer_set(p, "another test");
+	VBuffer_add(v, p);
+
+	bark("len: %d", VBuffer_length(v));
+
+	/* remove bufs */
+	while ((p = VBuffer_remove(&v)) != NULL) {
+		printf("vbuf: %s\n", Buffer_get(p));
+		Buffer_free(&p);
+	}
+
+	bark("done!");
+
+	VBuffer_free(&v);
 }

@@ -8,12 +8,20 @@
 struct _Buffer;
 typedef struct _Buffer Buffer;
 
-struct _Buffer
-{
+struct _VBuffer;
+typedef struct _VBuffer VBuffer;
+
+struct _Buffer {
 	char *data;
 	int len;
 	int mem;
 };
+
+struct _VBuffer {
+	Buffer *buf;
+	VBuffer *next;
+};
+
 /*
 #ifdef TRUE
 # if !TRUE
@@ -53,6 +61,13 @@ void Buffer_replace(Buffer *, int, int, Buffer *);
 void Buffer_copy(Buffer *, Buffer *);
 bool Buffer_is_set(Buffer *);
 void Buffer_cat_range(Buffer *, char *, char *);
+
+VBuffer *VBuffer_init(void);
+#define VBuffer_free(v) VBuffer_long_free(v, FALSE)
+void VBuffer_long_free(VBuffer **, bool);
+void VBuffer_add(VBuffer *, Buffer *);
+Buffer *VBuffer_remove(VBuffer **);
+size_t VBuffer_length(VBuffer *);
 
 #ifndef __BARK
 void bark(char *, ...);

@@ -8,7 +8,7 @@ LIBS = -lm -lc
 TARGET = buftest
 
 #CFLAGS = -Wall -pedantic -O2 -ffast-math -pipe -march=i686 -fexpensive-optimizations
-CFLAGS = -Wall -pedantic
+CFLAGS = -Wall -pedantic -O -Wuninitialized -Wimplicit-function-declaration -Wmissing-prototypes -Wunused -Wmissing-declarations
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
@@ -19,4 +19,4 @@ buftest: $(OBJECTS)
 	$(CC) $(LIBS) -o $@ $(OBJECTS)
 
 clean:
-	rm -f $(TARGET) *.o
+	rm -f $(TARGET) $(OBJECTS)
