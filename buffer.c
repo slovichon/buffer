@@ -77,11 +77,11 @@ void Buffer_replace(Buffer *dst, int start, int len, Buffer *src)
 void Buffer_addch(Buffer *p, char ch)
 {
 	int len = p->len;
-	/* Our data is already zero-bounded */
+	/* Our data is already zero-bounded. */
 	if (ch == '\0')
 		return;
 	if (len <= 0) {
-		/* Buffer isn't initialized */
+		/* Buffer isn't initialized. */
 		p->len = len = 1; /* new '\0' */
 	}
 	Buffer_ensure(p, len + 1);
@@ -99,7 +99,7 @@ void Buffer_append(Buffer *dst, Buffer *src)
 		dst->data[len - 1] = '\0';
 		dst->len = len;
 	} else {
-		/* Buffer isn't initialized, just copy */
+		/* Buffer isn't initialized, just copy. */
 		Buffer_copy(dst, src);
 	}
 }
@@ -148,7 +148,7 @@ void Buffer_cat(Buffer *p, char *s)
 
 char *Buffer_get(Buffer *p)
 {
-	/* make sure the buffer has been initialized*/
+	/* Make sure the buffer has been initialized. */
 	/* XXX: return "" if it hasn't? */
 	assert(p->data != NULL);
 	return p->data;
@@ -158,7 +158,7 @@ static void Buffer_ensure(Buffer *p, size_t len)
 {
 	int newlen;
 	if (p->mem < len) {
-		/* Round to 8-byte boundary for some poor malloc()'s */
+		/* Round to 8-byte boundary for some poor malloc()'s. */
 #if 0
 		newlen = 8*ceil((double)(1+(len * 3)/2)/8); /* 1/log(len) */
 #endif
@@ -197,7 +197,7 @@ void Buffer_cat_range(Buffer *p, char *start, char *end)
 void Buffer_chomp(Buffer *p, int num)
 {
 	if (Buffer_is_set(p) && (Buffer_length(p) > num-1)) {
-		p->data[Buffer_length(p)-num] = '\0';
+		p->data[Buffer_length(p) - num] = '\0';
 		p->len -= num-1;
 	}
 }
@@ -252,12 +252,12 @@ void VBuffer_add(VBuffer *v, Buffer *p)
 {
 	VBuffer *new, *i;
 	if (v->buf == NULL) {
-		/* If this node is empty, use it */
+		/* If this node is empty, use it. */
 		v->buf = p;
 	} else {
 		new = VBuffer_init();
 		new->buf = p;
-		/* Find last vbuf */
+		/* Find last vbuf. */
 		for (i = v; i->next != NULL; i = i->next);
 		i->next = new;
 	}
@@ -276,12 +276,12 @@ Buffer *VBuffer_remove(VBuffer **v)
 	 */
 	for (last = *v; last && (last->next != NULL); last = last->next)
 		newlast = last;
-	/* This function was called on an empty vbuf */
+	/* This function was called on an empty vbuf. */
 	if ((newlast == NULL) && (last == NULL))
 		return NULL;
 	p = last->buf;
 	if (newlast == NULL) {
-		/* This is the last buf; clear original vbuf */
+		/* This is the last buf; clear original vbuf. */
 		VBuffer_long_free(v, TRUE);
 	} else {
 		newlast->next = NULL;
@@ -297,7 +297,8 @@ size_t VBuffer_length(VBuffer *v)
 {
 	VBuffer *i;
 	size_t n = 0;
-	for (i = v; i; n++, i = i->next);
+	for (i = v; i; n++, i = i->next)
+		;
 	return n;
 }
 
