@@ -50,7 +50,7 @@ bark("--------------------");
 bark("buffer contents gathered");
 	printf("buf: %s\n", s);
 
-	Buffer_free(&p);
+	Buffer_long_free(&p, FALSE);
 	Buffer_free(&q);
 
 	vbuf_test();
