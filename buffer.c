@@ -1,10 +1,10 @@
 /* $Id$ */
 
-#include "buffer.h"
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
+/* #include <math.h> */
+#include <assert.h>
+#include "buffer.h"
 
 static void Buffer_ensure(Buffer *p, size_t len);
 
@@ -16,7 +16,7 @@ static void Buffer_ensure(Buffer *p, size_t len);
  * Note that Buffer_free() is a macro to NOT
  * save the data pointer.
  */
-void Buffer_long_free(Buffer **p, bool saveptr)
+void Buffer_long_free(Buffer **p, bool_t saveptr)
 {
 	if (p && *p) {
 		if ((*p)->data && !saveptr)
@@ -39,7 +39,7 @@ int Buffer_length(Buffer *p)
 Buffer *Buffer_init(size_t len)
 {
 	Buffer *p;
-	assert((p = (Buffer*)malloc(sizeof(Buffer))) != NULL);
+	p = (Buffer *)xmalloc(sizeof(Buffer));
 	p->data = NULL;
 	p->len = -1;
 	p->mem = 0;
@@ -106,7 +106,7 @@ void Buffer_append(Buffer *dst, Buffer *src)
 
 void Buffer_copy(Buffer *dst, Buffer *src)
 {
-	assert((dst->data = strdup(src->data)) != NULL);
+	dst->data = xstrdup(src->data);
 	dst->mem = src->mem;
 	dst->len = src->len;
 }
@@ -120,12 +120,21 @@ void Buffer_set(Buffer *p, char *s)
 	p->len = len;
 }
 
+void Buffer_set_range(Buffer *p, char *start, char *end)
+{
+	int len = end - start + 1;
+	Buffer_ensure(p, len);
+	strncpy(p->data, start, len);
+	p->data[len - 1] = '\0';
+	p->len = len;
+}
+
 /*
  * Concatenate a char array onto a buffer.
  */
 void Buffer_cat(Buffer *p, char *s)
 {
-	if (p->len >= 0)
+	if (Buffer_is_set(p))
 	{
 		int len = p->len + strlen(s);
 		Buffer_ensure(p, len);
@@ -133,7 +142,6 @@ void Buffer_cat(Buffer *p, char *s)
 		p->data[len - 1] = '\0';
 		p->len = len;
 	} else {
-		/* Buffer isn't initialized */
 		Buffer_set(p, s);
 	}
 }
@@ -156,7 +164,7 @@ static void Buffer_ensure(Buffer *p, size_t len)
 #endif
 		len = (len * 3) / 2;
 		newlen = (len & ~0x7) + (len & 0x7 ? 8 : 0);
-		assert((p->data = (char *)realloc(p->data, newlen)) != NULL);
+		p->data = (char *)xrealloc(p->data, newlen);
 		p->mem = newlen;
 		if (p->len < 0) {
 			p->len = 0;
@@ -166,18 +174,32 @@ static void Buffer_ensure(Buffer *p, size_t len)
 	}
 }
 
-bool Buffer_is_set(Buffer *p)
+bool_t Buffer_is_set(Buffer *p)
 {
 	return (p != NULL) && (p->data != NULL);
 }
 
 void Buffer_cat_range(Buffer *p, char *start, char *end)
 {
-	int len = p->len + end - start;
-	Buffer_ensure(p, len);
-	strncat(p->data, start, end - start);
-	p->data[len - 1] = '\0';
-	p->len = len;
+	int len;
+
+	if (Buffer_is_set(p)) {
+		len = p->len + end - start;
+		Buffer_ensure(p, len);
+		strncat(p->data, start, end - start);
+		p->data[len - 1] = '\0';
+		p->len = len;
+	} else {
+		Buffer_set_range(p, start, end);
+	}
+}
+
+void Buffer_chomp(Buffer *p, int num)
+{
+	if (Buffer_is_set(p) && (Buffer_length(p) > num-1)) {
+		p->data[Buffer_length(p)-num] = '\0';
+		p->len -= num-1;
+	}
 }
 
 /*
@@ -186,7 +208,7 @@ void Buffer_cat_range(Buffer *p, char *start, char *end)
 VBuffer *VBuffer_init(void)
 {
 	VBuffer *v;
-	assert((v = (VBuffer *)malloc(sizeof(VBuffer))) != NULL);
+	v = (VBuffer *)xmalloc(sizeof(VBuffer));
 	v->buf = NULL;
 	v->next = NULL;
 	return v;
@@ -213,7 +235,7 @@ void VBuffer_clear(VBuffer **v)
  * Note that VBuffer_free() is a macro for this to not
  * save the buffers.
  */
-void VBuffer_long_free(VBuffer **v, bool save)
+void VBuffer_long_free(VBuffer **v, bool_t save)
 {
 	if ((v != NULL) && (*v != NULL)) {
 		if (!save)

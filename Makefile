@@ -1,22 +1,24 @@
 # $Id$
 
-SOURCES = buffer.c buftest.c
-OBJECTS = buffer.o buftest.o
-
-LIBS = -lm -lc
-
-TARGET = buftest
-
-#CFLAGS = -Wall -pedantic -O2 -ffast-math -pipe -march=i686 -fexpensive-optimizations
-CFLAGS = -Wall -pedantic -O -Wuninitialized -Wimplicit-function-declaration -Wmissing-prototypes -Wunused -Wmissing-declarations
+OBJECTS = buffer.o xalloc.o
+LIBS = -lm -lc -L.
+TARGET = libbuffer.so
+CFLAGS = -Wall
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
-all: buftest
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(CC) -shared $(LIBS) -o $@ $(OBJECTS)
+	chmod 444 $@
+
+test: $(TARGET) buftest.o
+	$(CC) $(LIBS) -o buftest buftest.o -lbuffer
 
 buftest: $(OBJECTS)
 	$(CC) $(LIBS) -o $@ $(OBJECTS)
 
 clean:
-	rm -f $(TARGET) $(OBJECTS)
+	rm -f $(TARGET) $(OBJECTS) buftest buftest.o
